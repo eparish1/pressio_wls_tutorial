@@ -3,12 +3,12 @@ import copy
 import scipy.linalg
 np.random.seed(1)
 def get_gid_from_ij(i,j):
-  return (j%ny)*nx + i%nx
+  return int( (j%ny)*nx + i%nx )
 
 def get_ij_from_gid(gid):
   j = int(gid)/int(nx)
   i = gid%nx
-  return i,j
+  return int( i), int(j)
 
 nx = 128
 ny = 128
@@ -56,9 +56,9 @@ print('Making sample mesh!')
 method = 'qsampling'
 sample_mesh = np.zeros(N_sample,dtype='int')
 if method == 'random':
-  sample_mesh = np.array(range(0,N_cell),dtype='int')#np.random.randint(N_cell,size=N_sample)
-  shuffle(sample_mesh)
-  sample_mesh = sample_mesh[0:N_sample]
+  mesh_inds = np.array(range(0,N_cell),dtype='int')#np.random.randint(N_cell,size=N_sample)
+  shuffle(mesh_inds)
+  sample_mesh[:] = mesh_inds[0:N_sample]
 
 if method == 'qsampling':
   snapshots = np.zeros((0,3*nx*ny))
