@@ -1,5 +1,5 @@
 from pylab import *
-import copy 
+import copy
 import scipy.linalg
 np.random.seed(1)
 def get_gid_from_ij(i,j):
@@ -13,20 +13,19 @@ def get_ij_from_gid(gid):
 nx = 128
 ny = 128
 N_cell = nx*ny
-N_sample = 100#32**2 -1#64*64 
+N_sample = 100#32**2 -1#64*64
 nBasis = 10
-
 
 ###
 print('Building basis!')
 snapshots = np.zeros((0,3*nx*ny))
 for i in range(0,9):
   data = np.fromfile('solution' + str(i) + '.bin',dtype='float64')
-  nt = np.size(data)/(nx*ny*3)
+  nt = int(np.size(data)/(nx*ny*3))
   ulocal = np.reshape(data,(nt,3*nx*ny) )
   snapshots = np.append(snapshots,ulocal,axis=0)
 
-nsnaps = np.size(snapshots)/(nx*ny*3)
+nsnaps = int(np.size(snapshots)/(nx*ny*3))
 snapshots = np.reshape(snapshots,(nsnaps,nx*ny,3))
 PhiA = [None]*3
 for i in range(0,3):
@@ -51,16 +50,13 @@ print('Done!')
 
 ###
 
-
-
-
-
 print('===================')
 print('Making sample mesh!')
 #create random list of cells
 method = 'qsampling'
+sample_mesh = np.zeros(N_sample,dtype='int')
 if method == 'random':
-  sample_mesh = np.array(range(0,N_cell))#np.random.randint(N_cell,size=N_sample) 
+  sample_mesh = np.array(range(0,N_cell),dtype='int')#np.random.randint(N_cell,size=N_sample)
   shuffle(sample_mesh)
   sample_mesh = sample_mesh[0:N_sample]
 
@@ -68,20 +64,18 @@ if method == 'qsampling':
   snapshots = np.zeros((0,3*nx*ny))
   for i in range(0,9):
     data = np.fromfile('solution' + str(i) + '.bin',dtype='float64')
-    nt = np.size(data)/(nx*ny*3)
+    nt = int(np.size(data)/(nx*ny*3))
     ulocal = np.reshape(data,(nt,3*nx*ny) )
     snapshots = np.append(snapshots,ulocal,axis=0)
- 
-  nsnaps = np.size(snapshots)/(nx*ny*3)
+
+  nsnaps = int(np.size(snapshots)/(nx*ny*3))
   snapshots = np.reshape(snapshots,(nsnaps,nx*ny,3))
   snapshots_h = np.rollaxis(snapshots[:,:,-1],1)
   U,dum,dum = np.linalg.svd(snapshots_h,full_matrices=False)
   Q,R,P = scipy.linalg.qr(U[:,0:N_sample].transpose(),pivoting=True )
-  sample_mesh = P[0:N_sample]
+  sample_mesh[:] = P[0:N_sample]
 
 sample_mesh_plus_stencil = copy.deepcopy(sample_mesh)
-
-
 # add stencil to sample mesh
 for gid in sample_mesh:
   i,j = get_ij_from_gid(gid)
@@ -102,27 +96,23 @@ np.savetxt('sample_mesh_plus_stencil_gids.txt',sample_mesh_plus_stencil,fmt='%i'
 print("sample mesh is of size " + str(np.size(sample_mesh)))
 print("sample mesh with stencil is of size " + str(np.size(sample_mesh_plus_stencil)))
 
-
 ## make basis at sample mesh
 PhiSampleRho  = Phi[0 + 3*sample_mesh_plus_stencil,:]
 PhiSampleRhoU = Phi[1 + 3*sample_mesh_plus_stencil,:]
 PhiSampleRhoE = Phi[2 + 3*sample_mesh_plus_stencil,:]
-PhiSamplePlusStencil = np.zeros((np.size(sample_mesh_plus_stencil)*3,np.shape(Phi)[1]))
+PhiSamplePlusStencil = np.zeros(( int(np.size(sample_mesh_plus_stencil)*3), np.shape(Phi)[1]))
 PhiSamplePlusStencil[0::3,:] =  Phi[0 + 3*sample_mesh_plus_stencil,:]
 PhiSamplePlusStencil[1::3,:] =  Phi[1 + 3*sample_mesh_plus_stencil,:]
 PhiSamplePlusStencil[2::3,:] =  Phi[2 + 3*sample_mesh_plus_stencil,:]
 
-
 np.savetxt('PhiSamplePlusStencil.txt',PhiSamplePlusStencil)
-
-
-rel_indx = np.zeros(np.size(sample_mesh),dtype='int')
-
-for i in range(0,np.size(rel_indx)):
+rel_indx = np.zeros( int(np.size(sample_mesh)), dtype='int')
+for i in range(0, int(np.size(rel_indx))):
   rel_indx[i] = np.argmin(np.abs( sample_mesh[i] - sample_mesh_plus_stencil) )
 
 np.savetxt('sample_mesh_relative_indices.txt',rel_indx,fmt='%i')
 
-info_file_array = np.array([np.shape(Phi)[1],np.size(sample_mesh),np.size(sample_mesh_plus_stencil)])
+info_file_array = np.array([np.shape(Phi)[1],
+                            int(np.size(sample_mesh)),
+                            int(np.size(sample_mesh_plus_stencil))])
 np.savetxt('info_file.txt',info_file_array,fmt='%i')
-
