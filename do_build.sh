@@ -48,12 +48,6 @@ cd ..
 bdirname=build
 [[ ! -d ${bdirname} ]] && mkdir ${bdirname}
 
-if [[ $ARCH == mac ]]; then
-    TRILLIBDIR=${WORKINGDIR}/tpls/trilinos/install/lib
-else
-    TRILLIBDIR=${WORKINGDIR}/tpls/trilinos/install/lib64
-fi
-
 # enter
 rm -rf ${bdirname}/*
 cd ${bdirname}
@@ -66,7 +60,7 @@ cmake -DCMAKE_CXX_COMPILER=${CXX} \
       \
       -DOpenBLAS_DIR=${WORKINGDIR}/tpls/openblas/install/lib/cmake/openblas \
       -DTRILINOS_INC_DIR=${WORKINGDIR}/tpls/trilinos/install/include \
-      -DTRILINOS_LIB_DIR=${TRILLIBDIR} \
+      -DTRILINOS_LIB_DIR=${WORKINGDIR}/tpls/trilinos/install/lib \
       \
       ${CPPSRC}
 make
