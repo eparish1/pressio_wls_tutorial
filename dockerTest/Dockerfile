@@ -31,12 +31,12 @@ RUN mkdir -p ${TUTTPLS}/openblas \
 
 # EIGEN
 ENV EIGENVERSION=3.3.7
-ENV EIGENURL=http://bitbucket.org/eigen/eigen/get/${EIGENVERSION}
-ENV EIGENUNPACKEDDIRNAME=eigen-eigen-323c052e1731
+ENV EIGENURL=https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
+ENV EIGENUNPACKEDDIRNAME=eigen-3.3.7
 RUN mkdir -p ${TUTTPLS}/eigen \
 	&& cd ${TUTTPLS}/eigen \
-	&& wget ${EIGENURL}.tar.bz2 \
-	&& tar xf ${EIGENVERSION}.tar.bz2 \
+	&& wget ${EIGENURL} \
+	&& tar xf eigen-${EIGENVERSION}.tar.gz \
 	&& mv ${EIGENUNPACKEDDIRNAME} eigen
 
 # PRESSIO

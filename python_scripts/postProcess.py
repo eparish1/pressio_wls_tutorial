@@ -1,17 +1,6 @@
 from pylab import *
-from mpl_toolkits import mplot3d
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib import rc
-rc('text', usetex=True)
-rc('text.latex', preamble='\usepackage{amsmath},\usepackage{amssymb}')
-import os
 axis_font = {'size':20,'family':'serif'}
-mpl.rc('font',family='serif')
-rc('text', usetex=True)
 close("all")
 
 ## Post processing file. Makes plots of solution h at x,y=1.25
@@ -28,7 +17,7 @@ romSize = np.shape(phi)[1]
 
 
 # load nearest neighbors solution
-data_fom_nn = np.fromfile('solution4.bin')
+data_fom_nn = np.genfromtxt('solution_nn.txt')
 nt_fom_nn = np.size(data_fom_nn)/(nx*ny*3)
 u_fom_nn = np.reshape(data_fom_nn,(nt_fom,3*nx*ny) )
 u_fom_nn = np.reshape(u_fom_nn,(nt_fom,nx,ny,3))
@@ -42,7 +31,7 @@ xhat_rom = np.reshape(data_rom,(nt_rom,romSize))
 u_rom = np.einsum('ij,nj->ni',phi,xhat_rom)
 u_rom = np.reshape(u_rom,(nt_rom,nx,ny,3))
 
-data_fom = np.fromfile('solution100.bin')
+data_fom = np.genfromtxt('solution100_fom.txt')
 nt_fom = np.size(data_fom)/(nx*ny*3)
 u_fom = np.reshape(data_fom,(nt_fom,3*nx*ny) )
 u_fom = np.reshape(u_fom,(nt_fom,nx,ny,3))
