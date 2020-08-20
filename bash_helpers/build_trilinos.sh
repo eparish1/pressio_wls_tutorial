@@ -13,7 +13,8 @@ function build_trilinos(){
 
     # clone repo
     if [ ! -d Trilinos ]; then
-	git clone git@github.com:trilinos/Trilinos.git
+	git clone https://github.com/trilinos/Trilinos.git
+	#git clone git@github.com:trilinos/Trilinos.git
 	cd Trilinos
 	git checkout master
 	git checkout d5abc894f1052682c4933b9b6951d904e74aa7fe

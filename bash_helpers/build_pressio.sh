@@ -8,7 +8,8 @@ function build_pressio(){
     if [ ! -d pressio ]; then
 	mkdir -p pressio
 	cd pressio
-	git clone git@github.com:Pressio/pressio.git
+	git clone https://github.com/Pressio/pressio.git
+	#git clone git@github.com:Pressio/pressio.git
 	cd ..
     fi
     cd pressio
