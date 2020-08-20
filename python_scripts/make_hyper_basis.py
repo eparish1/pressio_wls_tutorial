@@ -17,6 +17,19 @@ N_sample = 100#32**2 -1#64*64
 nBasis = 10
 
 ###
+def pod(S):
+  U,S,V = np.linalg.svd(S,full_matrices='False')
+  K = nBasis
+  return U[:,0:K]
+
+def pod2(S):
+  Kern = np.dot(S.transpose(),S)
+  u,sigma_sqr,_ = np.linalg.svd(Kern)
+  sigma = np.sqrt(sigma_sqr)
+  U = np.dot(S,1./sigma*u)
+  return U[:,0:nBasis]
+
+
 print('Building basis!')
 snapshots = np.zeros((0,3*nx*ny))
 for i in range(0,9):
@@ -31,12 +44,7 @@ PhiA = [None]*3
 for i in range(0,3):
   snapshots_l = np.rollaxis(snapshots[:,:,i],1)
   print('Performing SVD of matrix of size ' + str(np.shape(snapshots_l)))
-  U,S,V = np.linalg.svd(snapshots_l,full_matrices='False')
-
-  energy = np.sum(S**2)
-  rel_energy = np.cumsum(S**2)/energy
-  K = nBasis
-  PhiA[i] = U[:,0:K]
+  PhiA[i] = pod2(snapshots_l)
 
 K1 = np.shape(PhiA[0])[1]
 K2 = np.shape(PhiA[1])[1]
