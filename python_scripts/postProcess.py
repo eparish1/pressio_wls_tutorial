@@ -19,8 +19,8 @@ romSize = np.shape(phi)[1]
 # load nearest neighbors solution
 data_fom_nn = np.genfromtxt('solution_nn.txt')
 nt_fom_nn = np.size(data_fom_nn)/(nx*ny*3)
-u_fom_nn = np.reshape(data_fom_nn,(nt_fom,3*nx*ny) )
-u_fom_nn = np.reshape(u_fom_nn,(nt_fom,nx,ny,3))
+u_fom_nn = np.reshape(data_fom_nn,(nt_fom_nn,3*nx*ny) )
+u_fom_nn = np.reshape(u_fom_nn,(nt_fom_nn,nx,ny,3))
 t_fom_nn = linspace(0,5,nt_fom_nn)
 
 
