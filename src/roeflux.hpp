@@ -58,4 +58,14 @@ void roeflux_kernel( flux_t  & F, const state_t & UL,
 
 }
 
+
+void roeflux_jacobian(){
+
+  JL[0,0] = -0.5*dsmaxL[0]*(qR[0] - qL[0]) + 0.5*(n[0]*qL[1] + n[1]*qL[2])  + 0.5*smax;
+  JL[0,1] = 0.5*n[0]*qL[0] - 0.5*dsmaxL[1]*(qR[0] - qL[0]);
+  JL[0,2] = 0.5*n[1]*qL[0] - 0.5*dsmaxL[2]*(qR[0] - qL[0]);
+
+
+}
+
 #endif

@@ -6,15 +6,15 @@ function build_eigen(){
 
     # get eigen
     if [ ! -d eigen ]; then
-	EIGENVERSION=3.3.7
-	EIGENURL=http://bitbucket.org/eigen/eigen/get/${EIGENVERSION}
-	EIGENUNPACKEDDIRNAME=eigen-eigen-323c052e1731
-
-	mkdir -p ${WORKINGDIR}/tpls/eigen
+  EIGENVERSION=3.3.7
+  EIGENURL=https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
+  EIGENUNPACKEDDIRNAME=eigen-3.3.7
+  mkdir -p ${WORKINGDIR}/tpls/eigen
 	cd ${WORKINGDIR}/tpls/eigen
-	wget ${EIGENURL}.tar.bz2
-	tar xf ${EIGENVERSION}.tar.bz2
+	wget ${EIGENURL}
+	tar xf eigen-${EIGENVERSION}.tar.gz
 	mv ${EIGENUNPACKEDDIRNAME} eigen
+
 	cd ${WORKINGDIR}
     fi
 
