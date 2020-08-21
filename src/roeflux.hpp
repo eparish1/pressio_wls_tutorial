@@ -114,32 +114,32 @@ void roeflux_jacobian( jac_t  & JL , jac_t & JR, const state_t & qL,
   dsmaxR[2] = n[1]*hsqrt_un / ( hR_sqrt*(hL_sqrt + hR_sqrt) * std::abs( hsqrt_un) );
 
   // jacobian w.r.p to the left state
-  JL[0,0] = -0.5*dsmaxL[0]*(qR[0] - qL[0]) + 0.5*(n[0]*uL + n[1]*vL - qL[0]*termL)  + 0.5*smax;
-  JL[0,1] = 0.5*n[0] - 0.5*dsmaxL[1]*(qR[0] - qL[0]);
-  JL[0,2] = 0.5*n[1] - 0.5*dsmaxL[2]*(qR[0] - qL[0]);
+  JL[0][0] = -0.5*dsmaxL[0]*(qR[0] - qL[0]) + 0.5*(n[0]*uL + n[1]*vL - qL[0]*termL)  + 0.5*smax;
+  JL[0][1] = 0.5*n[0] - 0.5*dsmaxL[1]*(qR[0] - qL[0]);
+  JL[0][2] = 0.5*n[1] - 0.5*dsmaxL[2]*(qR[0] - qL[0]);
 
-  JL[1,0] = 0.5*(g*n[0]*qL[0] - qL[1]*termL) - 0.5*dsmaxL[0]*(qR[1] - qL[1]);
-  JL[1,1] = n[0]*uL  + 0.5*n[1]*vL + 0.5*smax -0.5*dsmaxL[1]*(qR[1] - qL[1]);
-  JL[1,2] = 0.5*n[1]*uL  -0.5*dsmaxL[2]*(qR[1] - qL[1]);
+  JL[1][0] = 0.5*(g*n[0]*qL[0] - qL[1]*termL) - 0.5*dsmaxL[0]*(qR[1] - qL[1]);
+  JL[1][1] = n[0]*uL  + 0.5*n[1]*vL + 0.5*smax -0.5*dsmaxL[1]*(qR[1] - qL[1]);
+  JL[1][2] = 0.5*n[1]*uL  -0.5*dsmaxL[2]*(qR[1] - qL[1]);
 
-  JL[2,0] = 0.5*(g*n[1]*qL[0] - qL[2]*termL) - 0.5*dsmaxL[0]*(qR[2] - qL[2]);
-  JL[2,2] = 0.5*n[0]*vL  -0.5*dsmaxL[1]*(qR[2] - qL[2]);
-  JL[2,1] = n[1]*vL + 0.5*n[0]*uL + 0.5*smax -0.5*dsmaxL[2]*(qR[2] - qL[2]);
+  JL[2][0] = 0.5*(g*n[1]*qL[0] - qL[2]*termL) - 0.5*dsmaxL[0]*(qR[2] - qL[2]);
+  JL[2][2] = 0.5*n[0]*vL  -0.5*dsmaxL[1]*(qR[2] - qL[2]);
+  JL[2][1] = n[1]*vL + 0.5*n[0]*uL + 0.5*smax -0.5*dsmaxL[2]*(qR[2] - qL[2]);
 
    // jacobian w.r.p to the right state
 
 
-  JR[0,0] = -0.5*dsmaxR[0]*(qR[0] - qL[0]) + 0.5*(n[0]*uR + n[1]*vR - qR[0]*termR)  - 0.5*smax;
-  JR[0,1] = 0.5*n[0] - 0.5*dsmaxR[1]*(qR[0] - qL[0]);
-  JR[0,2] = 0.5*n[1] - 0.5*dsmaxR[2]*(qR[0] - qL[0]);
+  JR[0][0] = -0.5*dsmaxR[0]*(qR[0] - qL[0]) + 0.5*(n[0]*uR + n[1]*vR - qR[0]*termR)  - 0.5*smax;
+  JR[0][1] = 0.5*n[0] - 0.5*dsmaxR[1]*(qR[0] - qL[0]);
+  JR[0][2] = 0.5*n[1] - 0.5*dsmaxR[2]*(qR[0] - qL[0]);
 
-  JR[1,0] = 0.5*(g*n[0]*qR[0] - qR[1]*termR) - 0.5*dsmaxR[0]*(qR[1] - qL[1]);
-  JR[1,1] = n[0]*uR + 0.5*n[1]*vR - 0.5*smax - 0.5*dsmaxR[1]*(qR[1] - qL[1]);
-  JR[1,2] = 0.5*n[1]*uR -0.5*dsmaxR[2]*(qR[1] - qL[1]);
+  JR[1][0] = 0.5*(g*n[0]*qR[0] - qR[1]*termR) - 0.5*dsmaxR[0]*(qR[1] - qL[1]);
+  JR[1][1] = n[0]*uR + 0.5*n[1]*vR - 0.5*smax - 0.5*dsmaxR[1]*(qR[1] - qL[1]);
+  JR[1][2] = 0.5*n[1]*uR -0.5*dsmaxR[2]*(qR[1] - qL[1]);
 
-  JR[2,0] = 0.5*(g*n[1]*qR[0]  - qR[2]*termR) - 0.5*dsmaxR[0]*(qR[2] - qL[2]);
-  JR[2,2] = 0.5*n[0]*vR - 0.5*dsmaxR[1]*(qR[2] - qL[2]);
-  JR[2,1] = n[1]*vR + 0.5*n[0]*uR - 0.5*smax - 0.5*dsmaxR[2]*(qR[2] - qL[2]);
+  JR[2][0] = 0.5*(g*n[1]*qR[0]  - qR[2]*termR) - 0.5*dsmaxR[0]*(qR[2] - qL[2]);
+  JR[2][2] = 0.5*n[0]*vR - 0.5*dsmaxR[1]*(qR[2] - qL[2]);
+  JR[2][1] = n[1]*vR + 0.5*n[0]*uR - 0.5*smax - 0.5*dsmaxR[2]*(qR[2] - qL[2]);
 
 }
 
