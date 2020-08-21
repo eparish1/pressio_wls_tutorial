@@ -8,7 +8,13 @@ RUN apt-get update && apt-get install -y \
 	bash \
 	ncurses-bin \
 	ncurses-base \
-	gfortran
+	gfortran \
+	python3.8 \
+	zlib1g-dev \
+	libncurses5-dev \
+	python3-pip
+
+RUN pip3 install --upgrade pip
 
 #ENV TERM=xterm-256color
 ENV CC=/usr/bin/gcc
@@ -18,7 +24,6 @@ RUN ${CC} --version
 
 ENV TUT_WORKDIR=/wlsTutorial
 ENV TUTTPLS=${TUT_WORKDIR}/tpls
-
 RUN mkdir -p ${TUTTPLS}
 
 RUN mkdir -p ${TUTTPLS}/openblas \

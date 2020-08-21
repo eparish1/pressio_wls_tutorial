@@ -62,3 +62,6 @@ configure_file(./python_scripts/make_hyper_basis.py
   ${CMAKE_CURRENT_BINARY_DIR}/make_hyper_basis.py COPYONLY)
 configure_file(./python_scripts/postProcess.py
   ${CMAKE_CURRENT_BINARY_DIR}/postProcess.py COPYONLY)
+
+# bash script to run
+configure_file(./wfrun.sh ${CMAKE_CURRENT_BINARY_DIR}/wfrun.sh COPYONLY)

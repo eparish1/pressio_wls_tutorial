@@ -9,7 +9,7 @@ if __name__== "__main__":
   ## Post processing file. Makes plots of solution h at x,y=1.25
   nx = 128
   ny = 128
-  fom_final_time = 2.
+  fom_final_time = 5.
   rom_final_time = 5.
 
   def index_mapper(i,j):

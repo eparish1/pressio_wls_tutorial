@@ -1,4 +1,10 @@
-FROM wlstest
+FROM wlsbase
+
+RUN apt-get update && apt-get install -y \
+	python3-numpy \
+	python3-scipy
+
+#RUN pip install numpy scipy
 
 COPY . /wlsTutoSrc
 
@@ -10,11 +16,20 @@ RUN mkdir -p ${TUT_WORKDIR}/build \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DEIGEN_INCLUDE_DIR=${TUTTPLS}/eigen/eigen \
 	-DPRESSIO_INCLUDE_DIR=${TUTTPLS}/pressio/install/include \
-	-DOpenBLAS_DIR=${TUTTPLS}/openblas/install/lib/cmake/openblas \
 	-DTRILINOS_INC_DIR=${TUTTPLS}/trilinos/install/include \
 	-DTRILINOS_LIB_DIR=${TUTTPLS}/trilinos/install/lib \
+	-DOpenBLAS_DIR=${TUTTPLS}/openblas/install/lib/cmake/openblas \
 	/wlsTutoSrc \
-	&& make && ls
+	&& make -j2
 
 WORKDIR ${TUT_WORKDIR}/build
-CMD ["./sweFom"]
+ENV OMP_PLACES=cores
+ENV OMP_PROC_BIND=true
+ENV OMP_NUM_THREADS=3
+
+RUN chmod a+x make_hyper_basis.py \
+	&& chmod a+x postProcess.py \
+	&& chmod a+x run.sh
+
+CMD ["./run.sh"]
+#CMD ["sh","-c","./sweFom && ./make_hyper_basis.py && ./sweRom"]
