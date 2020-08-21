@@ -38,10 +38,10 @@ cd ${WORKINGDIR}
 
 # do tpls
 cd tpls
-source ${TOPDIR}/bash_helpers/build_openblas.sh && build_openblas
+#source ${TOPDIR}/bash_helpers/build_openblas.sh && build_openblas
 source ${TOPDIR}/bash_helpers/build_eigen.sh && build_eigen
-source ${TOPDIR}/bash_helpers/build_trilinos.sh && build_trilinos
-source ${TOPDIR}/bash_helpers/build_pressio.sh && build_pressio
+#source ${TOPDIR}/bash_helpers/build_trilinos.sh && build_trilinos
+#source ${TOPDIR}/bash_helpers/build_pressio.sh && build_pressio
 cd ..
 
 # do SWE

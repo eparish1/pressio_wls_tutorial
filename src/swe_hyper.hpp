@@ -31,17 +31,29 @@ class ShallowWaterAppHyper
     int ny_;
     scalar_t g_;
 
+  public:
+    using scalar_type	= scalar_t;
+    using state_type	= nativeVec;
+    using state_t = state_type;
+    using velocity_type	= state_type;
+    //using jacobian_type	= Tpetra::CrsMatrix<>;
+    using jacobian_type = Tpetra::BlockCrsMatrix<>;
+    using dense_matrix_type = Tpetra::BlockMultiVector<>;
+
+
 
   protected:
     Teuchos::RCP<Teuchos::FancyOStream> wrappedCout_;
     rcpcomm_t comm_{};
     rcpmap_t hyperMap_{};
     rcpmap_t hyperMapWithStencil_{};
+    rcpmap_t hyperMapWithStencil2_{};
 
     int myRank_{};
     int totRanks_{};
 
     mutable stdrcp<nativeVec> U_{};
+    stdrcp<jacobian_type> Jac_{};
     stdrcp<Tpetra::Vector<>> xGrid_{};
     stdrcp<Tpetra::Vector<>> yGrid_{};
 
@@ -51,13 +63,6 @@ class ShallowWaterAppHyper
     int sampleMeshSize_{};
     int sampleMeshPlusStencilSize_{};
 
-  public:
-    using scalar_type	= scalar_t;
-    using state_type	= nativeVec;
-    using state_t = state_type;
-    using velocity_type	= state_type;
-    using jacobian_type	= Tpetra::CrsMatrix<>;
-    using dense_matrix_type = Tpetra::BlockMultiVector<>;
 
 
   public:
@@ -136,6 +141,132 @@ class ShallowWaterAppHyper
         }
       }
     }
+
+
+    /*
+    void computeJacobian(const state_t & U, const scalar_t & t, velocity_type & V) const {
+      // J is of size sampleMeshSize_ x sampleMeshSize_
+      double *UL;
+      double *UR;
+      double *UU;
+      double *UD;
+      double *V_view;
+
+      double JL_L[3][3];
+      double JR_L[3][3];
+      double JL_R[3][3];
+      double JR_R[3][3];
+      double JD_D[3][3];
+      double JU_D[3][3];
+      double JD_U[3][3];
+      double JU_U[3][3];
+
+      std::array<double, 2> nx = { 1, 0 };
+      std::array<double, 2> ny = { 0, 1 };
+
+      bool is_gid_im1_in_sampleMesh = true;
+      bool is_gid_ip1_in_sampleMesh = true;
+      bool is_gid_jm1_in_sampleMesh = true;
+      bool is_gid_jp1_in_sampleMesh = true;
+
+      const auto gids = hyperMap_->getMyGlobalIndices();
+      //=================
+      for (int sid=0; sid < sampleMeshSize_  ; sid++){
+        auto gid = gids[sid];
+        auto ij = get_ij_from_gid(gid);
+        auto gid_im1 = get_gid_from_ij(ij[0] - 1,ij[1]);
+        auto gid_ip1 = get_gid_from_ij(ij[0] + 1,ij[1]);
+        auto gid_jm1 = get_gid_from_ij(ij[0],ij[1] - 1);
+        auto gid_jp1 = get_gid_from_ij(ij[0],ij[1] + 1);
+
+        U.getGlobalRowView(gid_im1,UL);
+        U.getGlobalRowView(gid,UR);
+        roeflux_jacobians(JL_L,JR_L,UL,UR,nx,g_);
+
+        U.getGlobalRowView(gid,UL);
+        U.getGlobalRowView(gid_ip1,UR);
+        roeflux_jacobians(JL_R,JR_R,UL,UR,nx,g_);
+
+        U.getGlobalRowView(gid_jm1,UD);
+        U.getGlobalRowView(gid,UU);
+        roeflux_jacobians(JD_D,JU_D,UD,UU,ny,g_);
+
+        U.getGlobalRowView(gid,UD);
+        U.getGlobalRowView(gid_jp1,UU);
+        roeflux_jacobians(JD_U,JU_U,UD,UU,ny,g_);
+
+        // column index is gid
+        // row index
+        int blockSize = 3;
+        int err = 0;
+        const go_t* globalColInds;
+        Scalar* vals;
+        int numEntries;
+        err = jac.getGlobalRowView(gid, globalColInds, vals, numEntries);
+        if (err != 0) {
+         break;
+        }
+        int k = 0;
+        // Blocks are stored in row-major format.
+        Scalar* const curBlock = vals[blockSize * blockSize * k];
+        for (lo_t j = 0; j < blockSize; ++j) {
+          for (lo_t i = 0; i < blockSize; ++i) {
+            const Scalar curVal = &curBlock[i + j * blockSize];
+            // Some function f of the current value and mesh point
+            curBlock[i + j * blockSize] = -1./dx_*(JL_R[i][j] - JR_L[i][j]) - 1./dy_*(JD_U[i][j] - JU_D[i][j]) ;
+          }
+        }
+        k = 1;
+        // Blocks are stored in row-major format.
+        curBlock = vals[blockSize * blockSize * k];
+        for (lo_t j = 0; j < blockSize; ++j) {
+          for (lo_t i = 0; i < blockSize; ++i) {
+            const Scalar curVal = &curBlock[i + j * blockSize];
+            // Some function f of the current value and mesh point
+            curBlock[i + j * blockSize] = 1./dx_*JL_L[i][j] ;
+          }
+        }
+        k = 2;
+        // Blocks are stored in row-major format.
+        Scalar* const curBlock = vals[blockSize * blockSize * k];
+        for (int j = 0; j < blockSize; ++j) {
+          for (int i = 0; i < blockSize; ++i) {
+            const Scalar curVal = &curBlock[i + j * blockSize];
+            // Some function f of the current value and mesh point
+            curBlock[i + j * blockSize] = -1./dx_*JR_R[i][j] ;
+          }
+        }
+
+
+        k = 3;
+        // Blocks are stored in row-major format.
+        curBlock = vals[blockSize * blockSize * k];
+        for (int j = 0; j < blockSize; ++j) {
+          for (int i = 0; i < blockSize; ++i) {
+            const Scalar curVal = &curBlock[i + j * blockSize];
+            // Some function f of the current value and mesh point
+            curBlock[i + j * blockSize] = 1./dy_*JD_D[i][j] ;
+          }
+        }
+
+
+        k = 4;
+        // Blocks are stored in row-major format.
+        curBlock = vals[blockSize * blockSize * k];
+        for (int j = 0; j < blockSize; ++j) {
+          for (int i = 0; i < blockSize; ++i) {
+            const Scalar curVal = &curBlock[i + j * blockSize];
+            // Some function f of the current value and mesh point
+            curBlock[i + j * blockSize] = -1./dy_*JU_U[i][j] ;
+          }
+        }
+        //J[gid,gid_im1] = 1./dx_*JL_L
+        //J[gid,gid_ip1] = -1./dx_*JR_R
+        //J[gid,gid_jm1] = 1./dy_*JD_D
+        //J[gid,gid_jp1] = -1./dy_*JU_U
+    }
+
+    */
 
 
     void applyJacobian(const state_t &U, const dense_matrix_type & A,scalar_t t, dense_matrix_type &JA)const{
@@ -241,7 +372,48 @@ protected:
         yGrid_->replaceGlobalValue(gid, dy_*ij[1] + dy_*0.5);
     }
 
+
+    // Jacobian
+    // construct a graph for the block matrix
+    int nonZrPerRow_ = 5;
+    crs_graph_type dataGraph(hyperMapWithStencil_,hyperMapWithStencil_,nonZrPerRow_);
+    assembleGraph(dataGraph);
+    const lo_t blockSize = 3;
+    Jac_ = std::make_shared<jacobian_type>(dataGraph,blockSize);
+
+
     };
+
+
+  void assembleGraph(crs_graph_type & graph)
+  {
+   
+    using tarr_it = Teuchos::ArrayView<go_t>;
+    std::array<go_t,5> row_gids;
+    const auto gids = hyperMap_->getMyGlobalIndices();
+    for (int sid=0; sid < sampleMeshSize_; sid++){
+      auto gid = gids[sid];
+      auto ij = get_ij_from_gid(gid);
+      auto gid_im1 = get_gid_from_ij(ij[0] - 1,ij[1]);
+      auto gid_ip1 = get_gid_from_ij(ij[0] + 1,ij[1]);
+      auto gid_jm1 = get_gid_from_ij(ij[0],ij[1] - 1);
+      auto gid_jp1 = get_gid_from_ij(ij[0],ij[1] + 1);
+      row_gids[0] = gid;
+      row_gids[1] = gid_im1;
+      row_gids[3] = gid_ip1;
+      row_gids[2] = gid_jm1;
+      row_gids[4] = gid_jp1;
+      graph.insertGlobalIndices(gid, tarr_it(row_gids.data(),5));
+    }
+    
+    graph.fillComplete();
+  }//end
+
+
+
+
+
+
 
 public:
 
