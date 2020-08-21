@@ -7,11 +7,11 @@ In order to successfully complete the tutorial, you need:
 * Environment variables `CC`, `CXX` and `FC` to point to your serial compilers.
 This has been tested wiht GCC-8.4.0
 
-* CMake >= 3.11.0;
+* CMake >= 3.10.0;
 
 * Bash >= 3.2.57.
 
-* Python>3.6 with numpy, scipy and matplotlib
+* Python>=3.6.10 with numpy, scipy and matplotlib.
 
 
 ## Building
@@ -36,4 +36,4 @@ Proceed as follows:
 cd ${TUT_WORKDIR}/build
 ./wfrun.sh
 ```
-this takes a couple minutes and should generate a plot: `result.png'.
+this takes a couple minutes and should generate a plot: `result.png`.
