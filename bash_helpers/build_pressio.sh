@@ -8,15 +8,19 @@ function build_pressio(){
     if [ ! -d pressio ]; then
 	mkdir -p pressio
 	cd pressio
-	git clone https://github.com/Pressio/pressio.git
-	#git clone git@github.com:Pressio/pressio.git
+	cp ${TOPDIR}/tpls/pressio.tar.gz .
+	tar zxf pressio.tar.gz
 	cd ..
+	#cd pressio
+	#git clone https://github.com/Pressio/pressio.git
+	#git clone git@github.com:Pressio/pressio.git
+	#cd ..
     fi
     cd pressio
 
-    cd pressio
-    git checkout rom/wls/hyperreduction
-    cd ..
+    #cd pressio
+    #git checkout rom/wls/hyperreduction
+    #cd ..
 
     [[ ! -d build ]] && mkdir build
 

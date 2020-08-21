@@ -10,7 +10,8 @@ function build_openblas(){
     cd openblas
 
     if [ ! -f v0.3.10.tar.gz ]; then
-	wget https://github.com/xianyi/OpenBLAS/archive/v0.3.10.tar.gz
+	#wget https://github.com/xianyi/OpenBLAS/archive/v0.3.10.tar.gz
+	cp ${TOPDIR}/tpls/v0.3.10.tar.gz .
     fi
 
     if [ ! -d OpenBLAS-0.3.10 ]; then

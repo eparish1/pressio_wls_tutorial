@@ -108,7 +108,7 @@ int main( int argc, char* argv[] )
 
     // do training runs in parallel
     auto startTime = std::chrono::high_resolution_clock::now();
-    #pragma omp parallel num_threads(3)
+    #pragma omp parallel num_threads(9)
     {
       #pragma omp for
       for (int i=0; i < params.size(); i++){
