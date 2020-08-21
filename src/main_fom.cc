@@ -84,7 +84,7 @@ void solve_FOM(double g, double mu, int sol_indx)
     t += dt;
     counter += 1;
 
-    if (counter % 10 == 0) std::cout << t << std::endl;
+    if (counter % 200 == 0) std::cout << t << std::endl;
   }
   myfile.close();
 }
@@ -96,24 +96,38 @@ int main( int argc, char* argv[] )
   std::string checkStr {"PASSED"};
   Tpetra::ScopeGuard tpetraScope (&argc, &argv);
   {
-    std::array<double,3> ga = {3.,6.,9.};
-    std::array<double,4> mua = {0.05,0.1,0.2};
-    int counter = 0;
-
+    // parameters
+    std::array<double,3> ga  = {3., 6., 9.};
+    std::array<double,3> mua = {0.05, 0.1, 0.2};
+    std::vector<std::pair<double,double>> params;
     for (int i=0; i < 3; i++){
       for (int j=0; j < 3; j++){
-        auto startTime = std::chrono::high_resolution_clock::now();
-        solve_FOM(ga[i],mua[j],counter);
-        counter += 1;
-        const auto finishTime = std::chrono::high_resolution_clock::now();
-        const std::chrono::duration<double> elapsed = finishTime - startTime;
-        std::cout << "Walltime = " << elapsed.count() << '\n';
+	params.push_back(std::make_pair(ga[i], mua[j]));
       }
     }
 
-    double g_test = 7.5;
-    double mu_test = 0.125;
+    // do training runs in parallel
+    auto startTime = std::chrono::high_resolution_clock::now();
+    #pragma omp parallel num_threads(3)
+    {
+      #pragma omp for
+      for (int i=0; i < params.size(); i++){
+	const auto thisParam = params[i];
+	solve_FOM(std::get<0>(thisParam), std::get<1>(thisParam), i);
+      }
+    }
+    auto finishTime = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double> elapsed = finishTime - startTime;
+    std::cout << "Walltime (training runs with OpenMP) = " << elapsed.count() << '\n';
+
+    // singe test run
+    startTime = std::chrono::high_resolution_clock::now();
+    const double g_test = 7.5;
+    const double mu_test = 0.125;
     solve_FOM(g_test,mu_test,100);
+    finishTime = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double> elapsed2 = finishTime - startTime;
+    std::cout << "Walltime (single FOM run) = " << elapsed2.count() << '\n';
   }
 
   return 0;

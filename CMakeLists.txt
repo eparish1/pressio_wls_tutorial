@@ -23,6 +23,8 @@ if (NOT ${OpenBLAS_FOUND})
   message(FATAL_ERROR "OpenBLAS not found")
 endif()
 
+find_package(OpenMP REQUIRED)
+
 set(TRILINOS_LIBRARIES kokkosalgorithms
   kokkoscontainers
   kokkoscore
@@ -46,15 +48,12 @@ set(TRILINOS_LIBRARIES kokkosalgorithms
   teuchosparameterlist)
 
 link_directories(${TRILINOS_LIB_DIR})
-include_directories(
-  ${EIGEN_INCLUDE_DIR} ${TRILINOS_INC_DIR} ${PRESSIO_INCLUDE_DIR})
-
-link_libraries(${OpenBLAS_LIBRARIES} ${TRILINOS_LIBRARIES})
+include_directories(${EIGEN_INCLUDE_DIR} ${TRILINOS_INC_DIR} ${PRESSIO_INCLUDE_DIR})
+link_libraries(OpenMP::OpenMP_CXX ${OpenBLAS_LIBRARIES} ${TRILINOS_LIBRARIES})
 
 # fom and rom executables
 set(exeName sweFom)
 add_executable(${exeName} ${CMAKE_CURRENT_SOURCE_DIR}/src/main_fom.cc)
-
 set(exeName sweRom)
 add_executable(${exeName} ${CMAKE_CURRENT_SOURCE_DIR}/src/main_rom.cc)
 

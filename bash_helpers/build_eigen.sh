@@ -7,13 +7,13 @@ function build_eigen(){
     # get eigen
     if [ ! -d eigen ]; then
 	EIGENVERSION=3.3.7
-	EIGENURL=http://bitbucket.org/eigen/eigen/get/${EIGENVERSION}
-	EIGENUNPACKEDDIRNAME=eigen-eigen-323c052e1731
+	EIGENTARURL=https://gitlab.com/libeigen/eigen/-/archive/${EIGENVERSION}/eigen-${EIGENVERSION}.tar.gz
+	EIGENUNPACKEDDIRNAME=eigen-${EIGENVERSION}
 
 	mkdir -p ${WORKINGDIR}/tpls/eigen
 	cd ${WORKINGDIR}/tpls/eigen
-	wget ${EIGENURL}.tar.bz2
-	tar xf ${EIGENVERSION}.tar.bz2
+	wget ${EIGENTARURL}
+	tar zxf eigen-${EIGENVERSION}.tar.gz
 	mv ${EIGENUNPACKEDDIRNAME} eigen
 	cd ${WORKINGDIR}
     fi
