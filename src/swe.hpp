@@ -232,8 +232,8 @@ public:
       for (int j=0; j < ny_; j++){
         double * uVal;
         U_->getLocalRowView(index_mapper(i,j),uVal);
-        uVal[0] = 1. + mu*exp( - ( pow( xGridv[index_mapper(i,j)] - 2.5,2)
-				   + pow(yGridv[index_mapper(i,j)] - 2.5,2) ));
+        uVal[0] = 1. + mu*exp( - ( pow( xGridv[index_mapper(i,j)] - 1.5,2)
+				   + pow(yGridv[index_mapper(i,j)] - 1.5,2) ));
         uVal[1] = 0.;
         uVal[2] = 0.;
       }

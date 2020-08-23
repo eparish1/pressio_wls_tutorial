@@ -3,7 +3,14 @@
 #define SWE_HYPER_HPP_
 
 #include "roeflux.hpp"
+#include <Tpetra_BlockMultiVector_decl.hpp>
+#include <Tpetra_BlockMultiVector_def.hpp>
+#include <Tpetra_BlockMultiVector_decl.hpp>
+#include <Tpetra_BlockMultiVector_fwd.hpp>
+#include "/Users/ejparis/tutorial_build/tpls/trilinos/Trilinos/packages/tpetra/core/src/Tpetra_BlockMultiVector_decl.hpp"
+//#include 
 #include <Tpetra_BlockVector_decl.hpp>
+#include <Tpetra_Experimental_BlockMultiVector_decl.hpp>
 #include <Tpetra_CrsGraph_decl.hpp>
 #include <Tpetra_Map_decl.hpp>
 #include <Tpetra_CrsMatrix_decl.hpp>
@@ -49,11 +56,13 @@ class ShallowWaterAppHyper
     rcpmap_t hyperMap_{};
     rcpmap_t hyperMapWithStencil_{};
     rcpmap_t hyperMapWithStencil2_{};
-
+    using importer_t = Tpetra::Import<lo_t,go_t>;
+    stdrcp<importer_t>	importer_{};
     int myRank_{};
     int totRanks_{};
 
     mutable stdrcp<nativeVec> U_{};
+
     stdrcp<jacobian_type> Jac_{};
     stdrcp<Tpetra::Vector<>> xGrid_{};
     stdrcp<Tpetra::Vector<>> yGrid_{};
@@ -169,10 +178,6 @@ class ShallowWaterAppHyper
       std::array<double, 2> nx = { 1, 0 };
       std::array<double, 2> ny = { 0, 1 };
 
-      bool is_gid_im1_in_sampleMesh = true;
-      bool is_gid_ip1_in_sampleMesh = true;
-      bool is_gid_jm1_in_sampleMesh = true;
-      bool is_gid_jp1_in_sampleMesh = true;
 
       const auto gids = hyperMap_->getMyGlobalIndices();
       //=================
@@ -203,119 +208,94 @@ class ShallowWaterAppHyper
         // column index is gid
         // row index
         lo_t blockSize = 3;
-        int err = 0;
-        std::vector<go_t> gcols(5);
-        Teuchos::ArrayView<const go_t>  globalColInds2(gcols);
-        std::vector<scalar_t> gvals(5);
-
-//        scalar_t* vals;
-        Teuchos::ArrayView<const scalar_t>  vals2(gvals);
-
         const lo_t * colInds;
         scalar_t* vals;
-        lo_t numInds = 5;
-//
-//        go_t numEntries;
-//        jac.getGlobalRowView(gid, &globalColInds2, &vals2);
-        jac.getLocalRowView(sid,colInds, vals,numInds);
 
-
-
+    	  int err = 0;
+        int nvals = jac.getNumEntriesInLocalRow(sid);
+        std::vector<go_t> col_gids(nvals);
+        err = jac.getLocalRowView(sid,colInds, vals,nvals);
         if (err != 0) {
+         std::cout << "error in getting row view" << std::endl;
          break;
         }
+        auto colMap = jac.getColMap();
+        for (lo_t col_no = 0; col_no < nvals; col_no ++){
+          col_gids[col_no] = colMap->getGlobalElement(colInds[col_no]); 
+          //std::cout << sid << " " << col_no << " " << col_gids[col_no] << std::endl;
+        }
+       /// 
+       for (int k = 0; k < nvals; k++){
+          auto col_gid = col_gids[k];
 
-        lo_t k = 0;
-        // Blocks are stored in row-major format.
-        //scalar_t* const curBlock = vals[blockSize * blockSize * k];
+      if (col_gid == gid){
         for (lo_t j = 0; j < blockSize; ++j) {
           for (lo_t i = 0; i < blockSize; ++i) {
-            // Some function f of the current value and mesh point
             vals[blockSize * blockSize * k + i + j * blockSize] = -1./dx_*(JL_R[i][j] - JR_L[i][j]) - 1./dy_*(JD_U[i][j] - JU_D[i][j]) ;
           }
         }
-/*
-
-        k = 1;
-      if (globalColInds[k] == gid_im1){
+      }
+      else if (col_gid == gid_im1){
         // Blocks are stored in row-major format.
-        curBlock = vals[blockSize * blockSize * k];
         for (lo_t j = 0; j < blockSize; ++j) {
           for (lo_t i = 0; i < blockSize; ++i) {
-            //const scalar_t curVal = &curBlock[i + j * blockSize];
-            // Some function f of the current value and mesh point
-            curBlock[i + j * blockSize] = 1./dx_*JL_L[i][j] ;
+            vals[blockSize * blockSize * k + i + j * blockSize] = 1./dx_*JL_L[i][j] ;
           }
         }
       }
-        k = 2;
-      if (globalColInds[k] == gid_ip1){
-        // Blocks are stored in row-major format.
-        curBlock = vals[blockSize * blockSize * k];
+      else if (col_gid == gid_ip1){
         for (int j = 0; j < blockSize; ++j) {
           for (int i = 0; i < blockSize; ++i) {
-            const scalar_t curVal = &curBlock[i + j * blockSize];
-            // Some function f of the current value and mesh point
-            curBlock[i + j * blockSize] = -1./dx_*JR_R[i][j] ;
+            vals[blockSize * blockSize * k + i + j * blockSize] = -1./dx_*JR_R[i][j] ;
           }
         }
       }
 
-        k = 3;
-      if (globalColInds[k] == gid_jm1){
-        // Blocks are stored in row-major format.
-        curBlock = vals[blockSize * blockSize * k];
+      else if (col_gid == gid_jm1){
         for (int j = 0; j < blockSize; ++j) {
           for (int i = 0; i < blockSize; ++i) {
-            const scalar_t curVal = &curBlock[i + j * blockSize];
-            // Some function f of the current value and mesh point
-            curBlock[i + j * blockSize] = 1./dy_*JD_D[i][j] ;
+            vals[blockSize * blockSize * k + i + j * blockSize] = 1./dy_*JD_D[i][j] ;
           }
         }
       }
 
-        k = 4;
-      if (globalColInds[k] == gid_jm1){
-        // Blocks are stored in row-major format.
-        curBlock = vals[blockSize * blockSize * k];
+      else if (col_gid == gid_jp1){
         for (int j = 0; j < blockSize; ++j) {
           for (int i = 0; i < blockSize; ++i) {
-            const scalar_t curVal = &curBlock[i + j * blockSize];
-            // Some function f of the current value and mesh point
-            curBlock[i + j * blockSize] = -1./dy_*JU_U[i][j] ;
+            vals[blockSize * blockSize * k + i + j * blockSize] = -1./dy_*JU_U[i][j] ;
           }
         }
       }
-*/
-        //J[gid,gid_im1] = 1./dx_*JL_L
-        //J[gid,gid_ip1] = -1./dx_*JR_R
-        //J[gid,gid_jm1] = 1./dy_*JD_D
-        //J[gid,gid_jp1] = -1./dy_*JU_U
+        }
+
       }
 
     } 
 
 
     // computes: A = Jac B where B is dense
-    void applyJacobian2(const state_type & y,
-           const dense_matrix_type & B,
+    void applyJacobian(const state_type & y,
+           const dense_matrix_type & B, //of size sample mesh plus stencil
            scalar_type t,
-           dense_matrix_type & A) const
+           dense_matrix_type & A) const //of size sample mesh
     {
-      updateJacobian(y, *Jac_, t);
-      const auto B_vv = B.getMultiVectorView();
+      dense_matrix_type B_sm(*hyperMap_, 3, B.getNumVectors() );
+      auto  B_sm_vv = B_sm.getMultiVectorView();
+      auto  B_vv = B.getMultiVectorView();
+      B_sm_vv.doImport(B_vv,*importer_,Tpetra::CombineMode::REPLACE);
       auto A_vv     = A.getMultiVectorView();
-      Jac_->apply(B_vv, A_vv);
+      updateJacobian(y, *Jac_, t);
+      Jac_->apply(B_sm_vv, A_vv);
     }
 
 
-    void applyJacobian(const state_t &U, const dense_matrix_type & A,scalar_t t, dense_matrix_type &JA)const{
+    void applyJacobianFD(const state_t &U, const dense_matrix_type & A,scalar_t t, dense_matrix_type &JA)const{
       double eps = 1.e-5;
       state_t Up(U,Teuchos::DataAccess::Copy);
       velocity_type V0(*hyperMap_,3);
       velocity_type V_perturb(*hyperMap_,3);
       V_perturb.putScalar(0.);
-
+      std::cout << "using FD jacobian" << std::endl;
       velocity(U,t,V0);
       const auto gids = hyperMap_->getMyGlobalIndices();
 
@@ -396,12 +376,20 @@ protected:
     hyperMap_ = Tpetra::createNonContigMap<lo_t,go_t>(sm_gids_,comm_);
     hyperMapWithStencil_ = Tpetra::createNonContigMap<lo_t,go_t>(smps_gids_,comm_);
 
+    //auto dum = Tpetra_BlockMultiVector::makePointMap(*hyperMap_,3);
+    auto hyperPointMapWithStencil = Tpetra::BlockMultiVector<scalar_t,lo_t,go_t>::makePointMap(*hyperMapWithStencil_,3);
+    auto hyperPointMap = Tpetra::BlockMultiVector<scalar_t,lo_t,go_t>::makePointMap(*hyperMap_,3);
+    using map_t = typename Tpetra::BlockMultiVector<scalar_t,lo_t,go_t>::map_type;
+    const auto hyperPointMap_rcp = Teuchos::rcp(new map_t(hyperPointMap));
+    const auto hyperPointMapWithStencil_rcp = Teuchos::rcp(new map_t(hyperPointMapWithStencil));
+    //dense_matrix_type dum1(*hyperMap_,3,30);
+    //dense_matrix_type dum2(*hyperMapWithStencil_,3,30);
+    //auto pointMap1 = dum1.makePointMap(*hyperMap_,3);
+    //auto pointMap2 = dum2.makePointMap(*hyperMapWithStencil_,3);
+    //importer_ = std::make_shared<importer_t>( hyperMapWithStencil_, hyperMap_);
+    importer_ = std::make_shared<importer_t>(hyperPointMapWithStencil_rcp, hyperPointMap_rcp);
+
     U_ = std::make_shared<nativeVec>(*hyperMapWithStencil_,3);
-
-    for (int i=0; i < sampleMeshSize_; i++){
-      auto id = hyperMap_->getGlobalElement(i);
-    }
-
 
     xGrid_ = std::make_shared<Tpetra::Vector<>>(hyperMapWithStencil_);
     yGrid_ = std::make_shared<Tpetra::Vector<>>(hyperMapWithStencil_);
@@ -419,7 +407,8 @@ protected:
     crs_graph_type dataGraph(hyperMap_,nonZrPerRow_);
     assembleGraph(dataGraph);
     const lo_t blockSize = 3;
-    Jac_ = std::make_shared<jacobian_type>();
+    Jac_ = std::make_shared<jacobian_type>(dataGraph,3);
+    //Jac_->describe(*wrappedCout_, Teuchos::VERB_EXTREME);
 
 
     };
@@ -439,15 +428,29 @@ protected:
   }
 
 
+  bool in_sample_mesh_plus_stencil(go_t gid_in){
+    bool val = false;
+    const auto gids = hyperMapWithStencil_->getMyGlobalIndices();
+    for (int sid = 0; sid < sampleMeshPlusStencilSize_; sid++){
+      auto gid = gids[sid];
+      if (gid == gid_in){
+        val = true;
+        break;
+      }
+    }
+    return val;
+  }
+
+
 
 
   void assembleGraph(crs_graph_type & graph)
   {
    
     using tarr_it = Teuchos::ArrayView<go_t>;
-    std::vector<go_t> row_gids(5);
     const auto gids = hyperMap_->getMyGlobalIndices();
     for (int sid=0; sid < sampleMeshSize_; sid++){
+      std::vector<go_t> row_gids(0);
       auto gid = gids[sid];
       auto ij = get_ij_from_gid(gid);
       auto gid_im1 = get_gid_from_ij(ij[0] - 1,ij[1]);
@@ -465,19 +468,23 @@ protected:
         gid_sz += 1;
       }
       if (in_sample_mesh(gid_jm1)){
-        row_gids.push_back(gid_im1);
+        row_gids.push_back(gid_jm1);
         gid_sz += 1;
       }
       if (in_sample_mesh(gid_jp1)){
         row_gids.push_back(gid_jp1);
         gid_sz += 1;
       }
+      
       //row_gids[0] = gid;
       //row_gids[1] = gid_im1;
       //row_gids[3] = gid_ip1;
       //row_gids[2] = gid_jm1;
       //row_gids[4] = gid_jp1;
-      graph.insertGlobalIndices(gid, tarr_it(row_gids.data(),gid_sz));
+      tarr_it tempArray(row_gids.data(),gid_sz);
+      graph.insertGlobalIndices(gid, tempArray);
+      //graph.insertLocalIndices(sid, tarr_it_lot(row_lids.data(),1));
+
     }
     
     graph.fillComplete();
@@ -498,7 +505,7 @@ public:
     for (int i=0; i < sampleMeshPlusStencilSize_; i++){
         double * uVal;
         U_->getLocalRowView(i,uVal);
-        uVal[0] = 1. + mu*exp( - ( pow( xGridv[i] - 2.5,2)  + pow(yGridv[i] - 2.5,2) ));
+        uVal[0] = 1. + mu*exp( - ( pow( xGridv[i] - 1.5,2)  + pow(yGridv[i] - 1.5,2) ));
         uVal[1] = 0.;
         uVal[2] = 0.;
     }

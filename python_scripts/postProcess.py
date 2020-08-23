@@ -17,7 +17,8 @@ romSize = np.shape(phi)[1]
 
 
 # load nearest neighbors solution
-data_fom_nn = np.genfromtxt('solution_nn.txt')
+#data_fom_nn = np.genfromtxt('solution_nn.txt')
+data_fom_nn = np.fromfile('solution4.bin')
 nt_fom_nn = np.size(data_fom_nn)/(nx*ny*3)
 u_fom_nn = np.reshape(data_fom_nn,(nt_fom_nn,3*nx*ny) )
 u_fom_nn = np.reshape(u_fom_nn,(nt_fom_nn,nx,ny,3))
@@ -31,7 +32,7 @@ xhat_rom = np.reshape(data_rom,(nt_rom,romSize))
 u_rom = np.einsum('ij,nj->ni',phi,xhat_rom)
 u_rom = np.reshape(u_rom,(nt_rom,nx,ny,3))
 
-data_fom = np.genfromtxt('solution100_fom.txt')
+data_fom = np.fromfile('solution100.bin')
 nt_fom = np.size(data_fom)/(nx*ny*3)
 u_fom = np.reshape(data_fom,(nt_fom,3*nx*ny) )
 u_fom = np.reshape(u_fom,(nt_fom,nx,ny,3))
