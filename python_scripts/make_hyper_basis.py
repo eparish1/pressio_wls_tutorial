@@ -127,7 +127,8 @@ if __name__== "__main__":
 
 
   ### convert final solution file from binary to .txt for docker
-  data_fom = np.fromfile('solution100.bin')
-  np.savetxt('solution100_fom.txt',data_fom)
-  data_fom_nn = np.fromfile('solution4.bin')
-  np.savetxt('solution_nn.txt',data_fom_nn)
+  #data_fom = np.fromfile('solution100.bin')
+  #np.savetxt('solution100_fom.txt',data_fom)
+  #data_fom_nn = np.fromfile('solution4.bin')
+  #np.savetxt('solution_nn.txt',data_fom_nn)
+

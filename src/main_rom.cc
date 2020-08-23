@@ -11,7 +11,7 @@ void solve_ROM(double g, double mu, int sol_indx)
   double dx = L/(nx );
   double dy = L/(ny );
   double dt = 0.05;
-  double et = 1.;
+  double et = 5.;
   double t = 0;
 
   using tcomm_t		= Teuchos::SerialComm<int>;
@@ -41,6 +41,7 @@ void solve_ROM(double g, double mu, int sol_indx)
   int sampleMeshPlusStencilSize;
   std::ifstream info_file("info_file.txt");
   info_file >> romSize;
+  std::cout << romSize << std::endl;;
   info_file >> sampleMeshSize;
   info_file >> sampleMeshPlusStencilSize;
   info_file.close();
@@ -48,7 +49,7 @@ void solve_ROM(double g, double mu, int sol_indx)
 	    << "| |  sampleMeshSize = " << sampleMeshSize
 	    << "| |  sampleMeshPlusStencilSize " << sampleMeshPlusStencilSize
 	    << std::endl;
-
+  
   fom_t appObj(nx,ny,dx,dy,sampleMeshSize,sampleMeshPlusStencilSize,g,Comm);
   fom_t::state_t U = appObj.getGaussianIC(mu);
   fom_t::state_t V = appObj.createVelocity();
@@ -77,7 +78,7 @@ void solve_ROM(double g, double mu, int sol_indx)
   scalar_t finalTime = 5;
   pressio::rom::wls::window_size_t numWindows = (finalTime/dt)/numStepsInWindow;
   decoder_t decoderObj(Phi);
-
+  /*
   // build reconstructor for post processing
   using fom_state_reconstr_t    = ::pressio::rom::FomStateReconstructor<scalar_t, fom_state_t, decoder_t>;
   const fom_state_reconstr_t fomStateReconstructor(fomStateReference,decoderObj);
@@ -139,6 +140,7 @@ void solve_ROM(double g, double mu, int sol_indx)
     counter += 1*numStepsInWindow;
   }
   myfile.close();
+  */
 }
 
 

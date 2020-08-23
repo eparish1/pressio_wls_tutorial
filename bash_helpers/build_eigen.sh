@@ -16,6 +16,7 @@ function build_eigen(){
 	cp ${TOPDIR}/tpls/eigen-${EIGENVERSION}.tar.gz .
 	tar zxf eigen-${EIGENVERSION}.tar.gz
 	mv ${EIGENUNPACKEDDIRNAME} eigen
+
 	cd ${WORKINGDIR}
     fi
 

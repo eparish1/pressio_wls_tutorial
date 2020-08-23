@@ -53,7 +53,7 @@ rm -rf ${bdirname}/*
 cd ${bdirname}
 cmake -DCMAKE_CXX_COMPILER=${CXX} \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=Debug \
       \
       -DEIGEN_INCLUDE_DIR=${WORKINGDIR}/tpls/eigen/eigen \
       -DPRESSIO_INCLUDE_DIR=${WORKINGDIR}/tpls/pressio/install/include \

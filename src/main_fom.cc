@@ -102,18 +102,18 @@ int main( int argc, char* argv[] )
     std::vector<std::pair<double,double>> params;
     for (int i=0; i < 3; i++){
       for (int j=0; j < 3; j++){
-	params.push_back(std::make_pair(ga[i], mua[j]));
+        params.push_back(std::make_pair(ga[i], mua[j]));
       }
     }
 
     // do training runs in parallel
     auto startTime = std::chrono::high_resolution_clock::now();
-    #pragma omp parallel num_threads(9)
+    #pragma omp parallel num_threads(3)
     {
       #pragma omp for
       for (int i=0; i < params.size(); i++){
-	const auto thisParam = params[i];
-	solve_FOM(std::get<0>(thisParam), std::get<1>(thisParam), i);
+        const auto thisParam = params[i];
+        solve_FOM(std::get<0>(thisParam), std::get<1>(thisParam), i);
       }
     }
     auto finishTime = std::chrono::high_resolution_clock::now();
