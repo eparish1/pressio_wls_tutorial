@@ -78,11 +78,7 @@ void solve_ROM(double g, double mu, int sol_indx)
   scalar_t finalTime = 5;
   pressio::rom::wls::window_size_t numWindows = (finalTime/dt)/numStepsInWindow;
   decoder_t decoderObj(Phi);
-  /*
-  // build reconstructor for post processing
-  using fom_state_reconstr_t    = ::pressio::rom::FomStateReconstructor<scalar_t, fom_state_t, decoder_t>;
-  const fom_state_reconstr_t fomStateReconstructor(fomStateReference,decoderObj);
-
+  
   //  lin solver
   using lin_solver_tag  = pressio::solvers::linear::direct::potrsL;
   using linear_solver_t = pressio::solvers::linear::Solver<lin_solver_tag, hessian_t>;
@@ -140,7 +136,7 @@ void solve_ROM(double g, double mu, int sol_indx)
     counter += 1*numStepsInWindow;
   }
   myfile.close();
-  */
+  
 }
 
 
